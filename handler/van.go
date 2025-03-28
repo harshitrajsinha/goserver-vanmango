@@ -13,19 +13,21 @@ import (
 	"github.com/harshitrajsinha/van-man-go/service"
 )
 
-type EngineHandler struct {
-	service service.EngineServiceInterface
+type VanHandler struct {
+	service service.VanServiceInterface
 }
 
-func NewEngineHandler(service service.EngineServiceInterface) *EngineHandler {
-	return &EngineHandler{
+func NewVanHandler(service service.VanServiceInterface) *VanHandler {
+	return &VanHandler{
 		service: service,
 	}
 }
 
 // Function to get Engine data by ID
-func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
+func (v *VanHandler) GetVanByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	// Get van id
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -40,7 +42,7 @@ func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get data from service layer
-	resp, err := e.service.GetEngineByID(ctx, id)
+	resp, err := v.service.GetVanById(ctx, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -60,11 +62,11 @@ func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // Function to get All Engine list
-func (e *EngineHandler) GetAllEngine(w http.ResponseWriter, r *http.Request) {
+func (v *VanHandler) GetAllVan(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Get data from service layer
-	resp, err := e.service.GetAllEngine(ctx)
+	resp, err := v.service.GetAllVan(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -84,7 +86,7 @@ func (e *EngineHandler) GetAllEngine(w http.ResponseWriter, r *http.Request) {
 }
 
 // Function to create Engine
-func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
+func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Read request body
@@ -97,8 +99,8 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var engineReq models.Engine
-	err = json.Unmarshal(body, &engineReq)
+	var vanReq models.Van
+	err = json.Unmarshal(body, &vanReq)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -108,7 +110,7 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify request body
-	if err := models.ValidateEngineReq(engineReq); err != nil {
+	if err := models.ValidateVaneReq(vanReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: fmt.Sprintf(err.Error())})
@@ -117,7 +119,7 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Pass data to service layer to create engine
-	createdEngine, err := e.service.CreateEngine(ctx, &engineReq)
+	createdVan, err := v.service.CreateVan(ctx, &vanReq)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -128,13 +130,15 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(Response{Code: http.StatusCreated, Message: createdEngine["message"]})
+	json.NewEncoder(w).Encode(Response{Code: http.StatusCreated, Message: createdVan["message"]})
 	log.Println("Data inserted successfully")
 }
 
 // Function to update Engine data by id
-func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
+func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	// Get van id
 	params := mux.Vars(r)
 	id := params["id"]
 
@@ -143,8 +147,8 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
-		log.Println("Invalid Engine ID")
+		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
+		log.Println("Invalid van ID")
 		return
 	}
 
@@ -158,8 +162,8 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var engineReq models.Engine
-	err = json.Unmarshal(body, &engineReq)
+	var vanReq models.Van
+	err = json.Unmarshal(body, &vanReq)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -168,8 +172,8 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Pass data to service layer to update engine
-	updatedEngine, err := e.service.UpdateEngine(ctx, id, &engineReq)
+	// Pass data to service layer to update van
+	updatedVan, err := v.service.UpdateVan(ctx, id, &vanReq)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -178,23 +182,25 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if updatedEngine > 0 {
+	if updatedVan > 0 {
 		// data is updated successfully
 		log.Println("Data updated successfully!")
 		// Get the updated result
-		e.GetEngineByID(w, r)
+		v.GetVanByID(w, r)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID"})
-		log.Println("value of updatedEngine is ", updatedEngine)
+		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID"})
+		log.Println("value of updatedVan is ", updatedVan)
 		return
 	}
 }
 
-// Function to delete Engine
-func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
+// Function to delete Van
+func (v *VanHandler) DeleteVan(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	// Get van id
 	params := mux.Vars(r)
 	id := params["id"]
 
@@ -203,12 +209,12 @@ func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
-		log.Println("Invalid Engine ID")
+		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
+		log.Println("Invalid van ID")
 		return
 	}
 
-	deletedEngine, err := e.service.DeleteEngine(ctx, id)
+	deletedVan, err := v.service.DeleteVan(ctx, id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
@@ -217,17 +223,17 @@ func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if deletedEngine > 0 {
+	if deletedVan > 0 {
 		// data is deleted successfully
 		w.WriteHeader(http.StatusNoContent)
 		w.Header().Set("Content-Type", "application/json")
-		log.Println("value of updatedEngine is ", deletedEngine)
+		log.Println("value of updatedVan is ", deletedVan)
 		return
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID"})
-		log.Println("value of updatedEngine is ", deletedEngine)
+		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID"})
+		log.Println("value of updatedVan is ", deletedVan)
 		return
 	}
 
