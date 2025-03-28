@@ -14,7 +14,7 @@ type Engine struct {
 // 1500cc – 4000cc
 func validateDisplacement(displacement int64) error {
 	if displacement < 1500 || displacement > 4000 {
-		return errors.New("displacement must fall within the range of 1500cc-4000cc")
+		return errors.New("displacement must fall within the range of 1500-4000")
 	}
 	return nil
 }
@@ -26,7 +26,7 @@ func validateCylinderNo(cylinders int) error {
 			return nil
 		}
 	}
-	return errors.New("possible no. of cylinders - [4, 6, 8]")
+	return errors.New("no. of cylinders must be one of following - [4, 6, 8]")
 }
 
 // aluminium || iron
@@ -34,7 +34,7 @@ func validateMaterial(material string) error {
 	if strings.ToLower(material) == "aluminium"  || strings.ToLower(material) == "iron" {
 		return nil
 	}
-	return errors.New("material could be either aluminium or iron")
+	return errors.New("material must be one of following - ['aluminium', 'iron']")
 }
 
 func ValidateEngineReq(engineRequest Engine) error{

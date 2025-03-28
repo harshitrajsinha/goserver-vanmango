@@ -18,14 +18,22 @@ func NewEngineService(store store.EngineStoreInterface) *EngineService{
 }
 
 func (s *EngineService) GetEngineByID(ctx context.Context, id string) (interface{}, error){
-	engine, err := s.store.EngineById(ctx, id)
+	engine, err := s.store.GetEngineById(ctx, id)
 	if err != nil{
 		return nil, err
 	}
 	return &engine, nil
 }
 
-func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engine)(interface{}, error){
+func (s *EngineService) GetAllEngine(ctx context.Context) (interface{}, error){
+	engine, err := s.store.GetAllEngine(ctx)
+	if err != nil{
+		return nil, err
+	}
+	return &engine, nil
+}
+
+func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engine)(map[string]string, error){
 	if err := models.ValidateEngineReq(*engineReq); err != nil{
 		return nil, err
 	}
@@ -35,27 +43,27 @@ func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engi
 		return nil, err
 	}
 
-	return &createdEngine, nil
+	return createdEngine, nil
 }
 
-func (s *EngineService) UpdateEngine(ctx context.Context, id string, engineReq *models.Engine)(interface{}, error){
+func (s *EngineService) UpdateEngine(ctx context.Context, id string, engineReq *models.Engine)(int64, error){
 	// if err := models.ValidateEngineReq(*engineReq); err != nil{
 	// 	return nil, err
 	// }
 
-	updatedEngine, err := s.store.EngineUpdate(ctx, id, engineReq)
+	updatedEngine, err := s.store.UpdateEngine(ctx, id, engineReq)
 	if err != nil{
-		return nil, err
+		return -1, err
 	}
-	return &updatedEngine, nil
+	return updatedEngine, nil
 }
 
 
-func (s *EngineService) DeleteEngine(ctx context.Context, id string)(interface{}, error){
+func (s *EngineService) DeleteEngine(ctx context.Context, id string)(int64, error){
 
-	deletedEngine, err := s.store.EngineDelete(ctx, id)
+	deletedEngine, err := s.store.DeleteEngine(ctx, id)
 	if err != nil{
-		return nil, err
+		return -1, err
 	}
-	return &deletedEngine, nil
+	return deletedEngine, nil
 }

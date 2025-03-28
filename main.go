@@ -10,61 +10,80 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/van-man-go/driver"
-	engineHandler "github.com/harshitrajsinha/van-man-go/handler"
-	engineService "github.com/harshitrajsinha/van-man-go/service"
-	engineStore "github.com/harshitrajsinha/van-man-go/store"
+	"github.com/harshitrajsinha/van-man-go/handler"
+	"github.com/harshitrajsinha/van-man-go/service"
+	"github.com/harshitrajsinha/van-man-go/store"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-func executeSchemaFile(db *sql.DB, filename string) error{
+func executeSchemaFile(db *sql.DB, filename string) error {
 	sqlFile, err := os.ReadFile(filename)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
 	_, err = db.Exec(string(sqlFile))
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	fmt.Println("SQL file executed successfully!")
 	return nil
 }
 
-func main(){
+func handleHomeRoute(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Server is functioning"})
+}
+
+func main() {
 	err := godotenv.Load()
 
-	if err != nil{
+	if err != nil {
 		log.Fatal("Error loading env file")
 	}
 
 	driver.InitDB()
 	defer driver.CloseDB()
-	
-	db := driver.GetDB()
-	
-	engineStore := engineStore.NewEngineStore(db)
-	engineService := engineService.NewEngineService(engineStore)
-	engineHandler := engineHandler.NewEngineHandler(engineService)
 
-	router := mux.NewRouter()
-	
+	db := driver.GetDB()
+
+	// Load data to table
 	schemaFile := "./store/schema.sql"
-	if err := executeSchemaFile(db, schemaFile); err != nil{
+	if err := executeSchemaFile(db, schemaFile); err != nil {
 		log.Fatal("Error while executing schema file: ", err)
 	}
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"message": "Server is functioning"})
-	}).Methods("GET")
+
+	// Initialize engine constructors
+	engineStore := store.NewEngineStore(db)
+	engineService := service.NewEngineService(engineStore)
+	engineHandler := handler.NewEngineHandler(engineService)
+
+	// Initialize van constructors
+	vanStore := store.NewVanStore(db)
+	vanService := service.NewVanService(vanStore)
+	vanHandler := handler.NewVanHandler(vanService)
+
+	router := mux.NewRouter()
+	router.HandleFunc("/", handleHomeRoute).Methods("GET")
+
+	// Routes for Engine
 	router.HandleFunc("/engine/{id}", engineHandler.GetEngineByID).Methods("GET")
+	router.HandleFunc("/engine", engineHandler.GetAllEngine).Methods("GET")
 	router.HandleFunc("/engine", engineHandler.CreateEngine).Methods("POST")
 	router.HandleFunc("/engine/{id}", engineHandler.UpdateEngine).Methods("PUT")
 	router.HandleFunc("/engine/{id}", engineHandler.DeleteEngine).Methods("DELETE")
 
+	// Routes for Van
+	router.HandleFunc("/van/{id}", vanHandler.GetVanByID).Methods("GET")
+	router.HandleFunc("/van", vanHandler.GetAllVan).Methods("GET")
+	router.HandleFunc("/van", vanHandler.CreateVan).Methods("POST")
+	router.HandleFunc("/van/{id}", vanHandler.UpdateVan).Methods("PUT")
+	router.HandleFunc("/van/{id}", vanHandler.DeleteVan).Methods("DELETE")
+
 	port := os.Getenv("PORT")
-	if port == ""{
+	if port == "" {
 		port = "8080"
 	}
 
