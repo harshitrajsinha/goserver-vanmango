@@ -9,11 +9,11 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/harshitrajsinha/van-man-go/driver"
-	"github.com/harshitrajsinha/van-man-go/handler"
-	"github.com/harshitrajsinha/van-man-go/middleware"
-	"github.com/harshitrajsinha/van-man-go/service"
-	"github.com/harshitrajsinha/van-man-go/store"
+	"github.com/harshitrajsinha/goserver-vanmango/driver"
+	"github.com/harshitrajsinha/goserver-vanmango/handler"
+	"github.com/harshitrajsinha/goserver-vanmango/middleware"
+	"github.com/harshitrajsinha/goserver-vanmango/service"
+	"github.com/harshitrajsinha/goserver-vanmango/store"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )

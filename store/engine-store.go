@@ -9,79 +9,79 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/harshitrajsinha/van-man-go/models"
+	"github.com/harshitrajsinha/goserver-vanmango/models"
 )
 
-type QueryResponse struct{
-	ID uuid.UUID `json:"-"`
-	Displacement int64 `json:"displacement_in_cc"`
-	NoOfCylinders int `json:"no_of_cylinders"`
-	Material string `json:"material"`
-	CreatedAt string `json:"-"`
-	UpdatedAt string `json:"-"`
+type QueryResponse struct {
+	ID            uuid.UUID `json:"-"`
+	Displacement  int64     `json:"displacement_in_cc"`
+	NoOfCylinders int       `json:"no_of_cylinders"`
+	Material      string    `json:"material"`
+	CreatedAt     string    `json:"-"`
+	UpdatedAt     string    `json:"-"`
 }
 
-type EngineStore struct{
+type EngineStore struct {
 	db *sql.DB
 }
 
-func NewEngineStore(db *sql.DB) *EngineStore{
+func NewEngineStore(db *sql.DB) *EngineStore {
 	return &EngineStore{db: db}
 }
 
-func (e EngineStore) GetEngineById(ctx context.Context, id string)(interface{}, error){
+func (e EngineStore) GetEngineById(ctx context.Context, id string) (interface{}, error) {
 	var queryData QueryResponse
 
 	// DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
-	if err != nil{
+	if err != nil {
 		return QueryResponse{}, err
 	}
 
-	defer func(){
-		if err != nil{
-			if rbErr := tx.Rollback(); rbErr != nil{
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Println("Transaction rollback error: ", rbErr)
 			}
-		}else{
-			if cmErr := tx.Commit(); cmErr != nil{
+		} else {
+			if cmErr := tx.Commit(); cmErr != nil {
 				log.Println("Commit rollback error: ", cmErr)
 			}
 		}
 	}()
-	err =tx.QueryRowContext(ctx, "SELECT * FROM engine WHERE id=$1", id).Scan(
+	err = tx.QueryRowContext(ctx, "SELECT * FROM engine WHERE id=$1", id).Scan(
 		&queryData.ID, &queryData.Displacement, &queryData.NoOfCylinders, &queryData.Material, &queryData.CreatedAt, &queryData.UpdatedAt)
-	if err != nil{
-		if errors.Is(err, sql.ErrNoRows){
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			return QueryResponse{}, nil // return empty model
 		}
 		return QueryResponse{}, err // return empty model
-	}	
+	}
 	return queryData, err
 }
 
-func (e EngineStore) GetAllEngine(ctx context.Context)(interface{}, error){
+func (e EngineStore) GetAllEngine(ctx context.Context) (interface{}, error) {
 
 	// DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
-	if err != nil{
+	if err != nil {
 		return QueryResponse{}, err
 	}
 
-	defer func(){
-		if err != nil{
-			if rbErr := tx.Rollback(); rbErr != nil{
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Println("Transaction rollback error: ", rbErr)
 			}
-		}else{
-			if cmErr := tx.Commit(); cmErr != nil{
+		} else {
+			if cmErr := tx.Commit(); cmErr != nil {
 				log.Println("Commit rollback error: ", cmErr)
 			}
 		}
 	}()
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM engine;")
-	if err != nil{
-		if errors.Is(err, sql.ErrNoRows){
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			return QueryResponse{}, nil // return empty model
 		}
 		return QueryResponse{}, err // return empty model
@@ -104,22 +104,22 @@ func (e EngineStore) GetAllEngine(ctx context.Context)(interface{}, error){
 	return engineData, err
 }
 
-func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine)(map[string]string, error){
+func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine) (map[string]string, error) {
 
 	// DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
-	if err != nil{
+	if err != nil {
 		log.Println("Error while inserting data ", err)
 		return nil, err
 	}
 
-	defer func(){
-		if err != nil{
-			if rbErr := tx.Rollback(); rbErr != nil{
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Println("Transaction rollback error: ", rbErr)
 			}
-		}else{
-			if cmErr := tx.Commit(); cmErr != nil{
+		} else {
+			if cmErr := tx.Commit(); cmErr != nil {
 				log.Println("Commit rollback error: ", cmErr)
 			}
 		}
@@ -128,10 +128,10 @@ func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine)
 	var query string = "INSERT INTO engine (displacement_in_cc, no_of_cylinders, material) VALUES ($1, $2, $3)"
 	result, err := tx.ExecContext(ctx, query, engineReq.Displacement, engineReq.NoOfCylinders, engineReq.Material)
 
-	if err != nil{
+	if err != nil {
 		log.Println("Error while inserting data ", err)
 		return nil, err
-	}	
+	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
@@ -145,22 +145,22 @@ func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine)
 	}
 }
 
-func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineReq *models.Engine)(int64, error){
+func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineReq *models.Engine) (int64, error) {
 
 	// DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
-	if err != nil{
+	if err != nil {
 		log.Println("Error while updating data ", err)
 		return -1, err
 	}
 
-	defer func(){
-		if err != nil{
-			if rbErr := tx.Rollback(); rbErr != nil{
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
 				fmt.Printf("Transaction rollback error: %v\n", rbErr)
 			}
-		}else{
-			if cmErr := tx.Commit(); cmErr != nil{
+		} else {
+			if cmErr := tx.Commit(); cmErr != nil {
 				fmt.Printf("Transaction commit error: %v\n", cmErr)
 			}
 		}
@@ -178,7 +178,7 @@ func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineRe
 		argCount++
 	}
 	if engineReq.NoOfCylinders > 0 {
-		if argCount > 1{
+		if argCount > 1 {
 			query.WriteString(", ")
 		}
 		query.WriteString(fmt.Sprintf("no_of_cylinders=$%d ", argCount))
@@ -186,7 +186,7 @@ func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineRe
 		argCount++
 	}
 	if engineReq.Material != "" {
-		if argCount > 1{
+		if argCount > 1 {
 			query.WriteString(", ")
 		}
 		query.WriteString(fmt.Sprintf("material=$%d ", argCount))
@@ -197,7 +197,7 @@ func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineRe
 	args = append(args, engineID)
 
 	result, err := tx.ExecContext(ctx, query.String(), args...)
-	if err != nil{
+	if err != nil {
 		log.Println("Error while updating data ", err)
 		return -1, err
 	}
@@ -206,21 +206,21 @@ func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineRe
 	return rowAffected, nil
 }
 
-func (e EngineStore) DeleteEngine(ctx context.Context, id string)(int64, error){
-	
+func (e EngineStore) DeleteEngine(ctx context.Context, id string) (int64, error) {
+
 	// DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
-	if err != nil{
+	if err != nil {
 		return -1, err
 	}
 
-	defer func(){
-		if err != nil{
-			if rbErr := tx.Rollback(); rbErr != nil{
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
 				log.Println("Transaction rollback error: ", rbErr)
 			}
-		}else{
-			if cmErr := tx.Commit(); cmErr != nil{
+		} else {
+			if cmErr := tx.Commit(); cmErr != nil {
 				log.Println("Commit rollback error: ", cmErr)
 			}
 		}
@@ -228,11 +228,11 @@ func (e EngineStore) DeleteEngine(ctx context.Context, id string)(int64, error){
 
 	var query string = "DELETE FROM engine WHERE id=$1"
 	result, err := tx.ExecContext(ctx, query, id)
-	if err != nil{
+	if err != nil {
 		return -1, err
 	}
 	rowAffected, err := result.RowsAffected()
 
 	return rowAffected, nil
-	
+
 }

@@ -2,15 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/harshitrajsinha/van-man-go/models"
-	"github.com/harshitrajsinha/van-man-go/service"
+	"github.com/harshitrajsinha/goserver-vanmango/models"
+	"github.com/harshitrajsinha/goserver-vanmango/service"
 )
 
 type VanHandler struct {
@@ -113,7 +112,7 @@ func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	if err := models.ValidateVaneReq(vanReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: fmt.Sprintf(err.Error())})
+		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: err.Error()})
 		log.Println(err)
 		return
 	}
