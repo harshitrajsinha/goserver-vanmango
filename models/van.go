@@ -45,10 +45,10 @@ func validateFuelType(fuel string) error {
 	return errors.New("fuel type must be one of following - ['petrol', 'diesel', 'gasoline']")
 }
 
-func validateEngine(engine Engine) error {
-	err := ValidateEngineReq(engine)
-	return err
-}
+// func validateEngine(engine Engine) error {
+// 	err := ValidateEngineReq(engine)
+// 	return err
+// }
 
 func validatePrice(price int64) error {
 	if price <= 0 {

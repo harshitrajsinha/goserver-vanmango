@@ -12,7 +12,7 @@ import (
 	"github.com/harshitrajsinha/goserver-vanmango/models"
 )
 
-type VanQueryResponse struct {
+type vanQueryResponse struct {
 	VanID       uuid.UUID `json:"van-id"`
 	Name        string    `json:"name"`
 	Brand       string    `json:"brand"`
@@ -20,9 +20,10 @@ type VanQueryResponse struct {
 	Category    string    `json:"category"`
 	FuelType    string    `json:"fuel-type"`
 	EngineID    string    `json:"engine-id"`
-	Price       string    `json:"price"`
-	CreatedAt   string    `json:"created-at"`
-	UpdatedAt   string    `json:"updated-at"`
+	Price       int64     `json:"price"`
+	Image       string    `json:"image-url"`
+	CreatedAt   string    `json:"-"`
+	UpdatedAt   string    `json:"-"`
 }
 
 type VanStore struct {
@@ -36,12 +37,12 @@ func NewVanStore(db *sql.DB) VanStore {
 // Query for van price > or < or range
 
 func (v VanStore) GetVanById(ctx context.Context, id string) (interface{}, error) {
-	var queryData VanQueryResponse
+	var queryData vanQueryResponse
 
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
-		return VanQueryResponse{}, err
+		return vanQueryResponse{}, err
 	}
 
 	defer func() {
@@ -56,23 +57,23 @@ func (v VanStore) GetVanById(ctx context.Context, id string) (interface{}, error
 		}
 	}()
 	err = tx.QueryRowContext(ctx, "SELECT * FROM van WHERE van_id=$1", id).Scan(
-		&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.CreatedAt, &queryData.UpdatedAt)
+		&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return QueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, nil // return empty model
 		}
-		return QueryResponse{}, err // return empty model
+		return vanQueryResponse{}, err // return empty model
 	}
 	return queryData, err
 }
 
 func (v VanStore) GetVanByName(ctx context.Context, name string) (interface{}, error) {
-	var queryData VanQueryResponse
+	var queryData vanQueryResponse
 
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
-		return VanQueryResponse{}, err
+		return vanQueryResponse{}, err
 	}
 
 	defer func() {
@@ -87,12 +88,12 @@ func (v VanStore) GetVanByName(ctx context.Context, name string) (interface{}, e
 		}
 	}()
 	err = tx.QueryRowContext(ctx, "SELECT * FROM van WHERE name=$1", name).Scan(
-		&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.CreatedAt, &queryData.UpdatedAt)
+		&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return QueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, nil // return empty model
 		}
-		return QueryResponse{}, err // return empty model
+		return vanQueryResponse{}, err // return empty model
 	}
 	return queryData, err
 }
@@ -102,7 +103,7 @@ func (v VanStore) GetVanByBrand(ctx context.Context, brand string) (interface{},
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
-		return VanQueryResponse{}, err
+		return vanQueryResponse{}, err
 	}
 
 	defer func() {
@@ -119,9 +120,9 @@ func (v VanStore) GetVanByBrand(ctx context.Context, brand string) (interface{},
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM van WHERE brand=$1", brand)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return VanQueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, nil // return empty model
 		}
-		return VanQueryResponse{}, err // return empty model
+		return vanQueryResponse{}, err // return empty model
 	}
 	defer rows.Close()
 
@@ -130,9 +131,9 @@ func (v VanStore) GetVanByBrand(ctx context.Context, brand string) (interface{},
 
 	// Get each row data into a slice
 	for rows.Next() {
-		var queryData VanQueryResponse
+		var queryData vanQueryResponse
 		if err := rows.Scan(
-			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
+			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
 			log.Fatal(err)
 		}
 		vanData = append(vanData, queryData)
@@ -146,7 +147,7 @@ func (v VanStore) GetVanByCategory(ctx context.Context, category string) (interf
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
-		return VanQueryResponse{}, err
+		return vanQueryResponse{}, err
 	}
 
 	defer func() {
@@ -163,9 +164,9 @@ func (v VanStore) GetVanByCategory(ctx context.Context, category string) (interf
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM van WHERE category=$1", category)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return VanQueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, nil // return empty model
 		}
-		return VanQueryResponse{}, err // return empty model
+		return vanQueryResponse{}, err // return empty model
 	}
 	defer rows.Close()
 
@@ -174,9 +175,9 @@ func (v VanStore) GetVanByCategory(ctx context.Context, category string) (interf
 
 	// Get each row data into a slice
 	for rows.Next() {
-		var queryData VanQueryResponse
+		var queryData vanQueryResponse
 		if err := rows.Scan(
-			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
+			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
 			log.Fatal(err)
 		}
 		vanData = append(vanData, queryData)
@@ -190,7 +191,7 @@ func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
-		return VanQueryResponse{}, err
+		return vanQueryResponse{}, err
 	}
 
 	defer func() {
@@ -207,9 +208,9 @@ func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM van;")
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return VanQueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, nil // return empty model
 		}
-		return VanQueryResponse{}, err // return empty model
+		return vanQueryResponse{}, err // return empty model
 	}
 	defer rows.Close()
 
@@ -218,9 +219,9 @@ func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
 
 	// Get each row data into a slice
 	for rows.Next() {
-		var queryData VanQueryResponse
+		var queryData vanQueryResponse
 		if err := rows.Scan(
-			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
+			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
 			log.Fatal(err)
 		}
 		vanData = append(vanData, queryData)
@@ -250,8 +251,8 @@ func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (map[string
 		}
 	}()
 
-	var query string = "INSERT INTO van (name, brand, description, category, fuel_type, engine_id, price) VALUES ($1, $2, $3, $4, $5, $6, $7)"
-	result, err := tx.ExecContext(ctx, query, vanReq.Name, vanReq.Brand, vanReq.Description, vanReq.Category, vanReq.FuelType, vanReq.EngineID, vanReq.Price)
+	var query string = "INSERT INTO van (name, brand, description, category, fuel_type, engine_id, price, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	result, err := tx.ExecContext(ctx, query, vanReq.Name, vanReq.Brand, vanReq.Description, vanReq.Category, vanReq.FuelType, vanReq.EngineID, vanReq.Price, vanReq.ImageURL)
 
 	if err != nil {
 		log.Println("Error while inserting data ", err)
@@ -271,7 +272,7 @@ func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (map[string
 }
 
 func (v VanStore) UpdateVan(ctx context.Context, vanID string, vanReq *models.Van) (int64, error) {
-
+	log.Println(vanReq)
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -348,6 +349,14 @@ func (v VanStore) UpdateVan(ctx context.Context, vanID string, vanReq *models.Va
 		}
 		query.WriteString(fmt.Sprintf("price=$%d ", argCount))
 		args = append(args, vanReq.Price)
+		argCount++
+	}
+	if vanReq.ImageURL != "" {
+		if argCount > 1 {
+			query.WriteString(", ")
+		}
+		query.WriteString(fmt.Sprintf("image_url=$%d ", argCount))
+		args = append(args, vanReq.ImageURL)
 		argCount++
 	}
 

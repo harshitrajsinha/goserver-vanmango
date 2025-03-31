@@ -48,8 +48,7 @@ func main() {
 
 	// panic recovery
 	defer func() {
-		var r interface{}
-		if r = recover(); r != nil {
+		if r := recover(); r != nil {
 			log.Println("Error occured: ", r)
 			debug.PrintStack()
 		}
@@ -87,6 +86,9 @@ func main() {
 		log.Println("SQL file executed successfully!")
 	}
 
+	router := mux.NewRouter()
+	router.HandleFunc("/", handleHomeRoute).Methods("GET")
+
 	// Initialize engine constructors
 	engineStore := store.NewEngineStore(dbClient)
 	engineService := service.NewEngineService(engineStore)
@@ -97,23 +99,27 @@ func main() {
 	vanService := service.NewVanService(vanStore)
 	vanHandler := handler.NewVanHandler(vanService)
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", handleHomeRoute).Methods("GET")
-	// router.HandleFunc("/login", handler.LoginHandler).Methods("POST")
+	// -------------------- Public routes
 
+	// Routes for Engine
+	router.HandleFunc("/engine/{id}", engineHandler.GetEngineByID).Methods("GET")
+	router.HandleFunc("/engine", engineHandler.GetAllEngine).Methods("GET")
+	// Routes for Van
+	router.HandleFunc("/van/{id}", vanHandler.GetVanByID).Methods("GET")
+	router.HandleFunc("/van", vanHandler.GetAllVan).Methods("GET")
+
+	// -------------------- Protected routes
+
+	// router.HandleFunc("/login", handler.LoginHandler).Methods("POST")
 	protectedRouter := router.PathPrefix("/").Subrouter()
 	// protectedRouter.Use(middleware.AuthMiddleware)
 
 	// Routes for Engine
-	protectedRouter.HandleFunc("/engine/{id}", engineHandler.GetEngineByID).Methods("GET")
-	protectedRouter.HandleFunc("/engine", engineHandler.GetAllEngine).Methods("GET")
 	protectedRouter.HandleFunc("/engine", engineHandler.CreateEngine).Methods("POST")
 	protectedRouter.HandleFunc("/engine/{id}", engineHandler.UpdateEngine).Methods("PUT")
 	protectedRouter.HandleFunc("/engine/{id}", engineHandler.DeleteEngine).Methods("DELETE")
 
 	// Routes for Van
-	protectedRouter.HandleFunc("/van/{id}", vanHandler.GetVanByID).Methods("GET")
-	protectedRouter.HandleFunc("/van", vanHandler.GetAllVan).Methods("GET")
 	protectedRouter.HandleFunc("/van", vanHandler.CreateVan).Methods("POST")
 	protectedRouter.HandleFunc("/van/{id}", vanHandler.UpdateVan).Methods("PUT")
 	protectedRouter.HandleFunc("/van/{id}", vanHandler.DeleteVan).Methods("DELETE")
