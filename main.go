@@ -3,32 +3,35 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"runtime/debug"
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/goserver-vanmango/driver"
 	"github.com/harshitrajsinha/goserver-vanmango/handler"
-	"github.com/harshitrajsinha/goserver-vanmango/middleware"
+	_ "github.com/harshitrajsinha/goserver-vanmango/middleware"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 	"github.com/harshitrajsinha/goserver-vanmango/store"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-func executeSchemaFile(db *sql.DB, filename string) error {
+// Function to load data to database via schema file
+func loadDataToDatabase(dbClient *sql.DB, filename string) error {
+
+	// Read file content
 	sqlFile, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}
 
-	_, err = db.Exec(string(sqlFile))
+	// Execute file content (queries)
+	_, err = dbClient.Exec(string(sqlFile))
 	if err != nil {
 		return err
 	}
-	fmt.Println("SQL file executed successfully!")
 	return nil
 }
 
@@ -39,39 +42,67 @@ func handleHomeRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	err := godotenv.Load()
+	var err error
+	var sqlSchemaFile string = "./store/schema.sql"
+	var dbClient *sql.DB
 
+	// panic recovery
+	defer func() {
+		var r interface{}
+		if r = recover(); r != nil {
+			log.Println("Error occured: ", r)
+			debug.PrintStack()
+		}
+	}()
+
+	// Load env file data to sys env (development)
+	_ = godotenv.Load()
+
+	// initialize database connection
+	var message string
+	err = driver.InitDB()
 	if err != nil {
-		log.Fatal("Error loading env file")
+		panic(err)
+	} else {
+		log.Println("Successfully connected to database")
 	}
+	log.Println(message)
 
-	driver.InitDB()
-	defer driver.CloseDB()
+	// close db connection
+	defer func() {
+		err = driver.CloseDB()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
-	db := driver.GetDB()
+	// Get instance of database client
+	dbClient = driver.GetDB()
 
-	// Load data to table
-	schemaFile := "./store/schema.sql"
-	if err := executeSchemaFile(db, schemaFile); err != nil {
-		log.Fatal("Error while executing schema file: ", err)
+	// Load data into database
+	err = loadDataToDatabase(dbClient, sqlSchemaFile)
+	if err != nil {
+		panic(err)
+	} else {
+		log.Println("SQL file executed successfully!")
 	}
 
 	// Initialize engine constructors
-	engineStore := store.NewEngineStore(db)
+	engineStore := store.NewEngineStore(dbClient)
 	engineService := service.NewEngineService(engineStore)
 	engineHandler := handler.NewEngineHandler(engineService)
 
 	// Initialize van constructors
-	vanStore := store.NewVanStore(db)
+	vanStore := store.NewVanStore(dbClient)
 	vanService := service.NewVanService(vanStore)
 	vanHandler := handler.NewVanHandler(vanService)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", handleHomeRoute).Methods("GET")
-	router.HandleFunc("/login", handler.LoginHandler).Methods("POST")
+	// router.HandleFunc("/login", handler.LoginHandler).Methods("POST")
 
 	protectedRouter := router.PathPrefix("/").Subrouter()
-	protectedRouter.Use(middleware.AuthMiddleware)
+	// protectedRouter.Use(middleware.AuthMiddleware)
 
 	// Routes for Engine
 	protectedRouter.HandleFunc("/engine/{id}", engineHandler.GetEngineByID).Methods("GET")
