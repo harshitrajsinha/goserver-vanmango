@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 )
@@ -37,7 +38,36 @@ func validateMaterial(material string) error {
 	return errors.New("material must be one of following - ['aluminium', 'iron']")
 }
 
-func ValidateEngineReq(engineRequest Engine) error {
+// Function to check which key exists in request body
+func verifyRequestBody(request []byte) [3]bool {
+
+	var doesKeyDisplacementExists bool
+	var doesKeyCylinderExists bool
+	var doesKeyMaterialExists bool
+	var data map[string]interface{}
+
+	_ = json.Unmarshal([]byte(request), &data)
+
+	if _, displacementExists := data["displacement"]; !displacementExists {
+		doesKeyDisplacementExists = false
+	} else {
+		doesKeyDisplacementExists = true
+	}
+	if _, cylinderExists := data["no-of-cylinders"]; !cylinderExists {
+		doesKeyCylinderExists = false
+	} else {
+		doesKeyCylinderExists = true
+	}
+	if _, materialExists := data["material"]; !materialExists {
+		doesKeyMaterialExists = false
+	} else {
+		doesKeyMaterialExists = true
+	}
+
+	return [3]bool{doesKeyDisplacementExists, doesKeyCylinderExists, doesKeyMaterialExists}
+}
+
+func ValidateEngineCrReq(engineRequest Engine) error {
 	var err error
 
 	if err = validateDisplacement(engineRequest.Displacement); err != nil {
@@ -50,6 +80,34 @@ func ValidateEngineReq(engineRequest Engine) error {
 
 	if err = validateMaterial(engineRequest.Material); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func ValidateEngineUpReq(request []byte) error {
+	var err error
+	var engineRequest Engine
+
+	_ = json.Unmarshal(request, &engineRequest)
+
+	// Check which key exists and verify accordingly
+	doesKeyExists := verifyRequestBody(request)
+
+	if doesKeyExists[0] { // if "displacement" exists in request body
+		if err = validateDisplacement(engineRequest.Displacement); err != nil {
+			return err
+		}
+	}
+	if doesKeyExists[1] { // if "no-of-cylinders" exists in request body
+		if err = validateCylinderNo(engineRequest.NoOfCylinders); err != nil {
+			return err
+		}
+	}
+	if doesKeyExists[2] { // if "material" exists in request body
+		if err = validateMaterial(engineRequest.Material); err != nil {
+			return err
+		}
 	}
 
 	return nil

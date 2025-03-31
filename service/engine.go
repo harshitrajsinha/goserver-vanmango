@@ -33,14 +33,14 @@ func (s *EngineService) GetAllEngine(ctx context.Context) (interface{}, error) {
 	return &engine, nil
 }
 
-func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engine) (map[string]string, error) {
-	if err := models.ValidateEngineReq(*engineReq); err != nil {
-		return nil, err
+func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engine) (int64, error) {
+	if err := models.ValidateEngineCrReq(*engineReq); err != nil {
+		return -1, err
 	}
 
 	createdEngine, err := s.store.CreateEngine(ctx, engineReq)
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
 	return createdEngine, nil

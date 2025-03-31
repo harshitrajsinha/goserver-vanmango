@@ -12,8 +12,8 @@ import (
 	"github.com/harshitrajsinha/goserver-vanmango/models"
 )
 
-type QueryResponse struct {
-	ID            uuid.UUID `json:"-"`
+type engineQueryResponse struct {
+	ID            uuid.UUID `json:"id"`
 	Displacement  int64     `json:"displacement_in_cc"`
 	NoOfCylinders int       `json:"no_of_cylinders"`
 	Material      string    `json:"material"`
@@ -25,17 +25,18 @@ type EngineStore struct {
 	db *sql.DB
 }
 
+// Constructor method for db variable
 func NewEngineStore(db *sql.DB) *EngineStore {
 	return &EngineStore{db: db}
 }
 
 func (e EngineStore) GetEngineById(ctx context.Context, id string) (interface{}, error) {
-	var queryData QueryResponse
+	var queryData engineQueryResponse
 
-	// DB transaction
+	// Begin DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
-		return QueryResponse{}, err
+		return engineQueryResponse{}, err
 	}
 
 	defer func() {
@@ -53,19 +54,19 @@ func (e EngineStore) GetEngineById(ctx context.Context, id string) (interface{},
 		&queryData.ID, &queryData.Displacement, &queryData.NoOfCylinders, &queryData.Material, &queryData.CreatedAt, &queryData.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return QueryResponse{}, nil // return empty model
+			return engineQueryResponse{}, nil // return empty model
 		}
-		return QueryResponse{}, err // return empty model
+		return engineQueryResponse{}, err // return empty model
 	}
 	return queryData, err
 }
 
 func (e EngineStore) GetAllEngine(ctx context.Context) (interface{}, error) {
 
-	// DB transaction
+	// Begin DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
-		return QueryResponse{}, err
+		return engineQueryResponse{}, err
 	}
 
 	defer func() {
@@ -82,35 +83,37 @@ func (e EngineStore) GetAllEngine(ctx context.Context) (interface{}, error) {
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM engine;")
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return QueryResponse{}, nil // return empty model
+			return engineQueryResponse{}, nil // return empty model
 		}
-		return QueryResponse{}, err // return empty model
+		return engineQueryResponse{}, err // return empty model
 	}
 	defer rows.Close()
 
 	// slice to store all rows
-	engineData := make([]interface{}, 0)
+	allEngineData := make([]interface{}, 0)
 
 	// Get each row data into a slice
 	for rows.Next() {
-		var queryData QueryResponse
+		var queryData engineQueryResponse
+		// Return single row
 		if err := rows.Scan(
 			&queryData.ID, &queryData.Displacement, &queryData.NoOfCylinders, &queryData.Material, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
 			log.Fatal(err)
 		}
-		engineData = append(engineData, queryData)
+		// store each row
+		allEngineData = append(allEngineData, queryData)
 	}
 
-	return engineData, err
+	return allEngineData, err
 }
 
-func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine) (map[string]string, error) {
+func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine) (int64, error) {
 
-	// DB transaction
+	// Begin DB transaction
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
 		log.Println("Error while inserting data ", err)
-		return nil, err
+		return -1, err
 	}
 
 	defer func() {
@@ -130,19 +133,16 @@ func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine)
 
 	if err != nil {
 		log.Println("Error while inserting data ", err)
-		return nil, err
+		return -1, err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		log.Println("Error while inserting data ", err)
-		return nil, err
+		return -1, err
 	}
-	if rowsAffected > 0 {
-		return map[string]string{"message": "Data inserted successfully!"}, nil
-	} else {
-		return map[string]string{"message": "No rows were inserted!"}, nil
-	}
+
+	return rowsAffected, nil
 }
 
 func (e EngineStore) UpdateEngine(ctx context.Context, engineID string, engineReq *models.Engine) (int64, error) {

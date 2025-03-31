@@ -9,7 +9,7 @@ import (
 type EngineStoreInterface interface {
 	GetEngineById(ctx context.Context, id string) (interface{}, error)
 	GetAllEngine(ctx context.Context) (interface{}, error)
-	CreateEngine(ctx context.Context, engineReq *models.Engine) (map[string]string, error)
+	CreateEngine(ctx context.Context, engineReq *models.Engine) (int64, error)
 	UpdateEngine(ctx context.Context, id string, engineReq *models.Engine) (int64, error)
 	DeleteEngine(ctx context.Context, id string) (int64, error)
 }
