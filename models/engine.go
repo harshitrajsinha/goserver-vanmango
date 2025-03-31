@@ -6,8 +6,8 @@ import (
 )
 
 type Engine struct {
-	Displacement  int64 `json:"displacement"`
-	NoOfCylinders int `json:"no-of-cylinders"`
+	Displacement  int64  `json:"displacement"`
+	NoOfCylinders int    `json:"no-of-cylinders"`
 	Material      string `json:"material"`
 }
 
@@ -21,8 +21,8 @@ func validateDisplacement(displacement int64) error {
 
 // [4,6,8]
 func validateCylinderNo(cylinders int) error {
-	for _, value := range [3]int{4, 6, 8}{
-		if cylinders == value{
+	for _, value := range [3]int{4, 6, 8} {
+		if cylinders == value {
 			return nil
 		}
 	}
@@ -31,24 +31,24 @@ func validateCylinderNo(cylinders int) error {
 
 // aluminium || iron
 func validateMaterial(material string) error {
-	if strings.ToLower(material) == "aluminium"  || strings.ToLower(material) == "iron" {
+	if strings.ToLower(material) == "aluminium" || strings.ToLower(material) == "iron" {
 		return nil
 	}
 	return errors.New("material must be one of following - ['aluminium', 'iron']")
 }
 
-func ValidateEngineReq(engineRequest Engine) error{
+func ValidateEngineReq(engineRequest Engine) error {
 	var err error
-	
-	if err = validateDisplacement(engineRequest.Displacement); err != nil{
+
+	if err = validateDisplacement(engineRequest.Displacement); err != nil {
 		return err
 	}
 
-	if err = validateCylinderNo(engineRequest.NoOfCylinders); err != nil{
+	if err = validateCylinderNo(engineRequest.NoOfCylinders); err != nil {
 		return err
 	}
 
-	if err = validateMaterial(engineRequest.Material); err != nil{
+	if err = validateMaterial(engineRequest.Material); err != nil {
 		return err
 	}
 
