@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/harshitrajsinha/van-man-go/models"
+	"github.com/harshitrajsinha/goserver-vanmango/models"
 )
 
 type VanQueryResponse struct {
