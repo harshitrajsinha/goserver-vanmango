@@ -14,7 +14,8 @@ type Van struct {
 	Category    string    `json:"category"`
 	FuelType    string    `json:"fuel-type"`
 	EngineID    uuid.UUID `json:"engine-id"`
-	Price       float64   `json:"price"`
+	Price       int64     `json:"price"`
+	ImageURL    string    `json:"image-url"`
 }
 
 // Validate name
@@ -49,9 +50,17 @@ func validateEngine(engine Engine) error {
 	return err
 }
 
-func validatePrice(price float64) error {
+func validatePrice(price int64) error {
 	if price <= 0 {
 		return errors.New("price must be greater than 0")
+	}
+	return nil
+}
+
+// Validate image URL
+func validateImageURL(image string) error {
+	if image == "" {
+		return errors.New("image is required")
 	}
 	return nil
 }
@@ -76,6 +85,10 @@ func ValidateVaneReq(vanRequest Van) error {
 	// }
 
 	if err = validatePrice(vanRequest.Price); err != nil {
+		return err
+	}
+
+	if err = validateImageURL(vanRequest.ImageURL); err != nil {
 		return err
 	}
 
