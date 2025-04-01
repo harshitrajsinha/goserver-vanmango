@@ -230,13 +230,13 @@ func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
 	return vanData, err
 }
 
-func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (map[string]string, error) {
+func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (int64, error) {
 
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {
 		log.Println("Error while inserting data ", err)
-		return nil, err
+		return -1, err
 	}
 
 	defer func() {
@@ -256,19 +256,16 @@ func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (map[string
 
 	if err != nil {
 		log.Println("Error while inserting data ", err)
-		return nil, err
+		return -1, err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		log.Println("Error while inserting data ", err)
-		return nil, err
+		return -1, err
 	}
-	if rowsAffected > 0 {
-		return map[string]string{"message": "Data inserted successfully!"}, nil
-	} else {
-		return map[string]string{"message": "No rows were inserted!"}, nil
-	}
+
+	return rowsAffected, nil
 }
 
 func (v VanStore) UpdateVan(ctx context.Context, vanID string, vanReq *models.Van) (int64, error) {

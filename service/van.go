@@ -57,14 +57,14 @@ func (v *VanService) GetAllVan(ctx context.Context) (interface{}, error) {
 	return &van, nil
 }
 
-func (v *VanService) CreateVan(ctx context.Context, vanReq *models.Van) (map[string]string, error) {
-	if err := models.ValidateVaneReq(*vanReq); err != nil {
-		return nil, err
+func (v *VanService) CreateVan(ctx context.Context, vanReq *models.Van) (int64, error) {
+	if err := models.ValidateVanReq(*vanReq); err != nil {
+		return -1, err
 	}
 
 	createdVan, err := v.store.CreateVan(ctx, vanReq)
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
 	return createdVan, nil

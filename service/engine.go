@@ -34,7 +34,7 @@ func (s *EngineService) GetAllEngine(ctx context.Context) (interface{}, error) {
 }
 
 func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engine) (int64, error) {
-	if err := models.ValidateEngineCrReq(*engineReq); err != nil {
+	if err := models.ValidateEngineReq(*engineReq); err != nil {
 		return -1, err
 	}
 

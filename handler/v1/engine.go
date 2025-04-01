@@ -10,12 +10,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/harshitrajsinha/goserver-vanmango/handler"
 	"github.com/harshitrajsinha/goserver-vanmango/models"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 )
 
-// Response type is declared in utils.go
-// VerifyRequestBody function is declared in utils.go
+// Response type is declared in handler/utils.go
+// VerifyEngineRequestBody function is declared in handler/utils.go
 
 type EngineHandler struct {
 	service service.EngineServiceInterface
@@ -38,6 +39,8 @@ func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	ctx := r.Context()
+
+	// Get engine id
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -46,7 +49,7 @@ func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
 		log.Println("Invalid Engine ID")
 		return
 	}
@@ -56,17 +59,16 @@ func (e *EngineHandler) GetEngineByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
 	// Send response
 	var respData []interface{}
 	respData = append(respData, resp) // enclose data in an array
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(Response{Code: http.StatusOK, Data: respData})
+	json.NewEncoder(w).Encode(handler.Response{Code: http.StatusOK, Data: respData})
 	log.Println("Engine data populated successfully based on ID")
 }
 
@@ -88,16 +90,14 @@ func (e *EngineHandler) GetAllEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
 	// Send response
-	var respData []interface{}
-	respData = append(respData, resp) // encode data into an array
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(Response{Code: http.StatusOK, Data: respData})
+	json.NewEncoder(w).Encode(handler.Response{Code: http.StatusOK, Data: resp})
 	log.Println("All engine data populated successfully")
 }
 
@@ -119,7 +119,7 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 	defer r.Body.Close()
@@ -129,25 +129,26 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
 		log.Println(err)
 		return
 	}
 
 	// verify request field
-	doesKeyExists := VerifyRequestBody(body, 1)
+	doesKeyExists := handler.VerifyEngineRequestBody(body, 1)
 	if !doesKeyExists {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		log.Println("Missing required fields")
 		return
 	}
 
 	// validate request body
-	if err := models.ValidateEngineCrReq(engineReq); err != nil {
+	if err := models.ValidateEngineReq(engineReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: err.Error()})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: err.Error()})
 		log.Println(err)
 		return
 	}
@@ -157,7 +158,7 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -165,12 +166,12 @@ func (e *EngineHandler) CreateEngine(w http.ResponseWriter, r *http.Request) {
 	if createdEngine > 0 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(Response{Code: http.StatusCreated, Message: "engine data inserted into DB successfully!"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusCreated, Message: "engine data inserted into DB successfully!"})
 		log.Println("engine data inserted into DB successfully!")
 	} else {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No rows inserted - Possibly data already exists"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No rows inserted - Possibly data already exists"})
 		log.Println("No rows inserted - Possibly data already exists")
 	}
 
@@ -198,7 +199,7 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
 		log.Println("Invalid Engine ID")
 		return
 	}
@@ -209,7 +210,7 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -218,25 +219,25 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
 		log.Println(err)
 		return
 	}
 
 	// verify request field
-	doesKeyExists := VerifyRequestBody(body, 0)
+	doesKeyExists := handler.VerifyEngineRequestBody(body, 1)
 	if !doesKeyExists {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
 		return
 	}
 
 	// validate request body
-	if err := models.ValidateEngineUpReq(body); err != nil {
+	if err := models.ValidateEngineReq(engineReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: err.Error()})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: err.Error()})
 		log.Println(err)
 		return
 	}
@@ -246,7 +247,7 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -258,7 +259,95 @@ func (e *EngineHandler) UpdateEngine(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already exists"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already exists"})
+		log.Println("value of updatedEngine is ", updatedEngine)
+		return
+	}
+}
+
+func (e *EngineHandler) UpdateEnginePartial(w http.ResponseWriter, r *http.Request) {
+
+	// panic recovery
+	defer func() {
+		var r interface{}
+		if r = recover(); r != nil {
+			log.Println("Error occured: ", r)
+			debug.PrintStack()
+		}
+	}()
+
+	ctx := r.Context()
+
+	// Get id
+	params := mux.Vars(r)
+	id := params["id"]
+
+	// Check if id is valid uuid
+	result, _ := uuid.Parse(id)
+	if result.Version() != 4 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
+		log.Println("Invalid Engine ID")
+		return
+	}
+	defer r.Body.Close()
+
+	// Read request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		panic(err)
+	}
+
+	var engineReq models.Engine
+	err = json.NewDecoder(strings.NewReader(string(body))).Decode(&engineReq)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
+		log.Println(err)
+		return
+	}
+
+	// verify request field
+	doesKeyExists := handler.VerifyEngineRequestBody(body, 0)
+	if !doesKeyExists {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		return
+	}
+
+	// validate request body
+	if err := models.ValidateEnginePatchReq(body); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: err.Error()})
+		log.Println(err)
+		return
+	}
+
+	// Pass data to service layer to update engine
+	updatedEngine, err := e.service.UpdateEngine(ctx, id, &engineReq)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		panic(err)
+	}
+
+	if updatedEngine > 0 {
+		// data is updated successfully
+		log.Println("Engine data updated successfully!")
+		// Get the updated result
+		e.GetEngineByID(w, r)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already exists"})
 		log.Println("value of updatedEngine is ", updatedEngine)
 		return
 	}
@@ -286,7 +375,7 @@ func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
 		log.Println("Invalid Engine ID")
 		return
 	}
@@ -296,7 +385,7 @@ func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusInternalServerError, Message: "Error occured while deleting data"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while deleting data"})
 		panic(err)
 	}
 
@@ -309,7 +398,7 @@ func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already deleted"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already deleted"})
 		log.Println("value of updatedEngine is ", deletedEngine)
 		return
 	}

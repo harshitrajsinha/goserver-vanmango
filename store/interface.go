@@ -20,7 +20,7 @@ type VanStoreInterface interface {
 	GetVanByBrand(ctx context.Context, brand string) (interface{}, error)
 	GetVanByCategory(ctx context.Context, category string) (interface{}, error)
 	GetAllVan(ctx context.Context) (interface{}, error)
-	CreateVan(ctx context.Context, vanReq *models.Van) (map[string]string, error)
+	CreateVan(ctx context.Context, vanReq *models.Van) (int64, error)
 	UpdateVan(ctx context.Context, id string, vanReq *models.Van) (int64, error)
 	DeleteVan(ctx context.Context, id string) (int64, error)
 }
