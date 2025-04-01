@@ -1,3 +1,32 @@
 ## VanMango - Van Management System based on Golang
 
-<pre> ```mermaid graph TD; A[Project Root] -->|contains| B[src]; A --> C[assets]; A --> D[README.md]; B --> E[index.js]; B --> F[app.js]; C --> G[logo.png]; ``` </pre>
+## Project Structure
+
+goserver/
+├─ driver/
+│ ├─ driver.go
+├─ handler/
+│ ├─ engine.go
+│ ├─ login.go
+│ ├─ utils.go
+│ ├─ van.go
+├─ middleware/
+│ ├─ auto.go
+├─ models/
+│ ├─ engine.go
+│ ├─ van.go
+├─ service/
+│ ├─ engine.go
+│ ├─ interface.go
+│ ├─ van.go
+├─ store/
+│ ├─ engine.go
+│ ├─ interface.go
+│ ├─ schema.sql
+│ ├─ van.go
+├─ .env
+├─ .gitignore
+├─ go.mod
+├─ go.sum
+├─ main.go
+├─ README.md
