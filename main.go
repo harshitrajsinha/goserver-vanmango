@@ -123,6 +123,7 @@ func main() {
 	// Routes for Van
 	protectedRouter.HandleFunc("/api/v1/van", vanHandler.CreateVan).Methods(http.MethodPost)
 	protectedRouter.HandleFunc("/api/v1/van/{id}", vanHandler.UpdateVan).Methods(http.MethodPut)
+	protectedRouter.HandleFunc("/api/v1/van/{id}", vanHandler.UpdateVanPartial).Methods(http.MethodPatch)
 	protectedRouter.HandleFunc("/api/v1/van/{id}", vanHandler.DeleteVan).Methods(http.MethodDelete)
 
 	port := os.Getenv("PORT")

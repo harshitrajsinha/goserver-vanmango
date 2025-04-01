@@ -7,16 +7,17 @@
 
 ## Project Structure
 
-goserver
-├── driver
+```
+goserver/
+├── driver       # Database initialization
 │ └── driver.go
-├── handler
+├── handler      # API route handling
 │ ├── v1
 │ │ ├── engine.go
 │ │ └── van.go
 │ ├── login.go
 │ └── utils.go
-├── middleware
+├── middleware   # API authorization
 │ └── auth.go
 ├── models
 │ ├── engine.go
@@ -26,7 +27,7 @@ goserver
 │ ├── engine.go
 │ ├── interface.go
 │ └── van.go
-├── store
+├── store           # CRUD operation
 │ ├── engine.go
 │ ├── interface.go
 │ ├── schema.sql
@@ -42,3 +43,4 @@ goserver
 ├── main.go
 ├── pending.md
 └── README.md
+```
