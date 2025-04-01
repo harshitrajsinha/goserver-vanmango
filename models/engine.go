@@ -39,7 +39,7 @@ func validateMaterial(material string) error {
 }
 
 // Function to check which key exists in request body
-func verifyRequestBody(request []byte) [3]bool {
+func verifyEngineRequestKeys(request []byte) [3]bool {
 
 	var doesKeyDisplacementExists bool
 	var doesKeyCylinderExists bool
@@ -67,7 +67,7 @@ func verifyRequestBody(request []byte) [3]bool {
 	return [3]bool{doesKeyDisplacementExists, doesKeyCylinderExists, doesKeyMaterialExists}
 }
 
-func ValidateEngineCrReq(engineRequest Engine) error {
+func ValidateEngineReq(engineRequest Engine) error {
 	var err error
 
 	if err = validateDisplacement(engineRequest.Displacement); err != nil {
@@ -85,14 +85,14 @@ func ValidateEngineCrReq(engineRequest Engine) error {
 	return nil
 }
 
-func ValidateEngineUpReq(request []byte) error {
+func ValidateEnginePatchReq(request []byte) error {
 	var err error
 	var engineRequest Engine
 
 	_ = json.Unmarshal(request, &engineRequest)
 
 	// Check which key exists and verify accordingly
-	doesKeyExists := verifyRequestBody(request)
+	doesKeyExists := verifyEngineRequestKeys(request)
 
 	if doesKeyExists[0] { // if "displacement" exists in request body
 		if err = validateDisplacement(engineRequest.Displacement); err != nil {
