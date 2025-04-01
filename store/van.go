@@ -60,130 +60,11 @@ func (v VanStore) GetVanById(ctx context.Context, id string) (interface{}, error
 		&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return vanQueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, err // return empty model
 		}
 		return vanQueryResponse{}, err // return empty model
 	}
-	return queryData, err
-}
-
-func (v VanStore) GetVanByName(ctx context.Context, name string) (interface{}, error) {
-	var queryData vanQueryResponse
-
-	// DB transaction
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return vanQueryResponse{}, err
-	}
-
-	defer func() {
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Println("Transaction rollback error: ", rbErr)
-			}
-		} else {
-			if cmErr := tx.Commit(); cmErr != nil {
-				log.Println("Commit rollback error: ", cmErr)
-			}
-		}
-	}()
-	err = tx.QueryRowContext(ctx, "SELECT * FROM van WHERE name=$1", name).Scan(
-		&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return vanQueryResponse{}, nil // return empty model
-		}
-		return vanQueryResponse{}, err // return empty model
-	}
-	return queryData, err
-}
-
-func (v VanStore) GetVanByBrand(ctx context.Context, brand string) (interface{}, error) {
-
-	// DB transaction
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return vanQueryResponse{}, err
-	}
-
-	defer func() {
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Println("Transaction rollback error: ", rbErr)
-			}
-		} else {
-			if cmErr := tx.Commit(); cmErr != nil {
-				log.Println("Commit rollback error: ", cmErr)
-			}
-		}
-	}()
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM van WHERE brand=$1", brand)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return vanQueryResponse{}, nil // return empty model
-		}
-		return vanQueryResponse{}, err // return empty model
-	}
-	defer rows.Close()
-
-	// slice to store all rows
-	vanData := make([]interface{}, 0)
-
-	// Get each row data into a slice
-	for rows.Next() {
-		var queryData vanQueryResponse
-		if err := rows.Scan(
-			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
-			log.Fatal(err)
-		}
-		vanData = append(vanData, queryData)
-	}
-
-	return vanData, err
-}
-
-func (v VanStore) GetVanByCategory(ctx context.Context, category string) (interface{}, error) {
-
-	// DB transaction
-	tx, err := v.db.BeginTx(ctx, nil)
-	if err != nil {
-		return vanQueryResponse{}, err
-	}
-
-	defer func() {
-		if err != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				log.Println("Transaction rollback error: ", rbErr)
-			}
-		} else {
-			if cmErr := tx.Commit(); cmErr != nil {
-				log.Println("Commit rollback error: ", cmErr)
-			}
-		}
-	}()
-	rows, err := tx.QueryContext(ctx, "SELECT * FROM van WHERE category=$1", category)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return vanQueryResponse{}, nil // return empty model
-		}
-		return vanQueryResponse{}, err // return empty model
-	}
-	defer rows.Close()
-
-	// slice to store all rows
-	vanData := make([]interface{}, 0)
-
-	// Get each row data into a slice
-	for rows.Next() {
-		var queryData vanQueryResponse
-		if err := rows.Scan(
-			&queryData.VanID, &queryData.Name, &queryData.Brand, &queryData.Description, &queryData.Category, &queryData.FuelType, &queryData.EngineID, &queryData.Price, &queryData.Image, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
-			log.Fatal(err)
-		}
-		vanData = append(vanData, queryData)
-	}
-
-	return vanData, err
+	return queryData, nil
 }
 
 func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
@@ -208,7 +89,7 @@ func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
 	rows, err := tx.QueryContext(ctx, "SELECT * FROM van;")
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return vanQueryResponse{}, nil // return empty model
+			return vanQueryResponse{}, err // return empty model
 		}
 		return vanQueryResponse{}, err // return empty model
 	}
@@ -227,7 +108,7 @@ func (v VanStore) GetAllVan(ctx context.Context) (interface{}, error) {
 		vanData = append(vanData, queryData)
 	}
 
-	return vanData, err
+	return vanData, nil
 }
 
 func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (int64, error) {
@@ -269,7 +150,7 @@ func (v VanStore) CreateVan(ctx context.Context, vanReq *models.Van) (int64, err
 }
 
 func (v VanStore) UpdateVan(ctx context.Context, vanID string, vanReq *models.Van) (int64, error) {
-	log.Println(vanReq)
+
 	// DB transaction
 	tx, err := v.db.BeginTx(ctx, nil)
 	if err != nil {

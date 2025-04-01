@@ -393,13 +393,13 @@ func (e *EngineHandler) DeleteEngine(w http.ResponseWriter, r *http.Request) {
 		// data is deleted successfully
 		w.WriteHeader(http.StatusNoContent)
 		w.Header().Set("Content-Type", "application/json")
-		log.Println("value of updatedEngine is ", deletedEngine)
+		log.Println("value of deletedEngine is ", deletedEngine)
 		return
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already deleted"})
-		log.Println("value of updatedEngine is ", deletedEngine)
+		log.Println("value of deletedEngine is ", deletedEngine)
 		return
 	}
 
