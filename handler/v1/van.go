@@ -399,7 +399,7 @@ func (v *VanHandler) DeleteVan(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Engine ID or data already deleted"})
+		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already deleted"})
 		log.Println("value of deletedVan is ", deletedVan)
 		return
 	}

@@ -10,7 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/goserver-vanmango/driver"
+	"github.com/harshitrajsinha/goserver-vanmango/handler"
 	apiV1 "github.com/harshitrajsinha/goserver-vanmango/handler/v1"
+	"github.com/harshitrajsinha/goserver-vanmango/middleware"
 	_ "github.com/harshitrajsinha/goserver-vanmango/middleware"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 	"github.com/harshitrajsinha/goserver-vanmango/store"
@@ -110,9 +112,9 @@ func main() {
 
 	// -------------------- Protected routes
 
-	// router.HandleFunc("/api/v1/login", handler.LoginHandler).Methods(http.MethodPost)
+	router.HandleFunc("/api/v1/login", handler.LoginHandler).Methods(http.MethodPost)
 	protectedRouter := router.PathPrefix("/").Subrouter()
-	// protectedRouter.Use(middleware.AuthMiddleware)
+	protectedRouter.Use(middleware.AuthMiddleware)
 
 	// Routes for Engine
 	protectedRouter.HandleFunc("/api/v1/engine", engineHandler.CreateEngine).Methods(http.MethodPost)

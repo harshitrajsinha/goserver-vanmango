@@ -25,30 +25,6 @@ func (v *VanService) GetVanById(ctx context.Context, id string) (interface{}, er
 	return &van, nil
 }
 
-func (v *VanService) GetVanByName(ctx context.Context, name string) (interface{}, error) {
-	van, err := v.store.GetVanByName(ctx, name)
-	if err != nil {
-		return nil, err
-	}
-	return &van, nil
-}
-
-func (v *VanService) GetVanByBrand(ctx context.Context, brand string) (interface{}, error) {
-	van, err := v.store.GetVanByBrand(ctx, brand)
-	if err != nil {
-		return nil, err
-	}
-	return &van, nil
-}
-
-func (v *VanService) GetVanByCategory(ctx context.Context, category string) (interface{}, error) {
-	van, err := v.store.GetVanByCategory(ctx, category)
-	if err != nil {
-		return nil, err
-	}
-	return &van, nil
-}
-
 func (v *VanService) GetAllVan(ctx context.Context) (interface{}, error) {
 	van, err := v.store.GetAllVan(ctx)
 	if err != nil {
@@ -58,9 +34,6 @@ func (v *VanService) GetAllVan(ctx context.Context) (interface{}, error) {
 }
 
 func (v *VanService) CreateVan(ctx context.Context, vanReq *models.Van) (int64, error) {
-	if err := models.ValidateVanReq(*vanReq); err != nil {
-		return -1, err
-	}
 
 	createdVan, err := v.store.CreateVan(ctx, vanReq)
 	if err != nil {
@@ -71,9 +44,6 @@ func (v *VanService) CreateVan(ctx context.Context, vanReq *models.Van) (int64, 
 }
 
 func (v *VanService) UpdateVan(ctx context.Context, id string, vanReq *models.Van) (int64, error) {
-	// if err := models.ValidateEngineReq(*engineReq); err != nil{
-	// 	return nil, err
-	// }
 
 	updatedVan, err := v.store.UpdateVan(ctx, id, vanReq)
 	if err != nil {

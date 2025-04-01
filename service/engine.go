@@ -34,9 +34,6 @@ func (s *EngineService) GetAllEngine(ctx context.Context) (interface{}, error) {
 }
 
 func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engine) (int64, error) {
-	if err := models.ValidateEngineReq(*engineReq); err != nil {
-		return -1, err
-	}
 
 	createdEngine, err := s.store.CreateEngine(ctx, engineReq)
 	if err != nil {
@@ -47,9 +44,6 @@ func (s *EngineService) CreateEngine(ctx context.Context, engineReq *models.Engi
 }
 
 func (s *EngineService) UpdateEngine(ctx context.Context, id string, engineReq *models.Engine) (int64, error) {
-	// if err := models.ValidateEngineReq(*engineReq); err != nil{
-	// 	return nil, err
-	// }
 
 	updatedEngine, err := s.store.UpdateEngine(ctx, id, engineReq)
 	if err != nil {

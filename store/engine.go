@@ -54,9 +54,9 @@ func (e EngineStore) GetEngineById(ctx context.Context, id string) (interface{},
 		&queryData.ID, &queryData.Displacement, &queryData.NoOfCylinders, &queryData.Material, &queryData.CreatedAt, &queryData.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return engineQueryResponse{}, nil // return empty model
+			return queryData, nil // return empty model
 		}
-		return engineQueryResponse{}, err // return empty model
+		return queryData, err // return empty model
 	}
 	return queryData, err
 }
@@ -96,15 +96,16 @@ func (e EngineStore) GetAllEngine(ctx context.Context) (interface{}, error) {
 	for rows.Next() {
 		var queryData engineQueryResponse
 		// Return single row
-		if err := rows.Scan(
-			&queryData.ID, &queryData.Displacement, &queryData.NoOfCylinders, &queryData.Material, &queryData.CreatedAt, &queryData.UpdatedAt); err != nil {
-			log.Fatal(err)
+		err = rows.Scan(
+			&queryData.ID, &queryData.Displacement, &queryData.NoOfCylinders, &queryData.Material, &queryData.CreatedAt, &queryData.UpdatedAt)
+		if err != nil {
+			return engineQueryResponse{}, err
 		}
 		// store each row
 		allEngineData = append(allEngineData, queryData)
 	}
 
-	return allEngineData, err
+	return allEngineData, nil
 }
 
 func (e EngineStore) CreateEngine(ctx context.Context, engineReq *models.Engine) (int64, error) {
