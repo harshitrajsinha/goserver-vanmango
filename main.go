@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"database/sql"
@@ -13,7 +13,6 @@ import (
 	"github.com/harshitrajsinha/goserver-vanmango/handler"
 	apiV1 "github.com/harshitrajsinha/goserver-vanmango/handler/v1"
 	"github.com/harshitrajsinha/goserver-vanmango/middleware"
-	_ "github.com/harshitrajsinha/goserver-vanmango/middleware"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 	"github.com/harshitrajsinha/goserver-vanmango/store"
 	"github.com/joho/godotenv"
