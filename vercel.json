@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "handler.go",
-      "use": "@vercel/go"
+      "use": "@vercel/go",
+      "config": {
+        "includeFiles": ["store/schema.sql"]
+      }
     }
   ],
   "routes": [
@@ -11,10 +14,5 @@
       "src": "/(.*)",
       "dest": "handler.go"
     }
-  ],
-  "functions": {
-    "handler.go": {
-      "includeFiles": "store/schema.sql"
-    }
-  }
+  ]
 }
