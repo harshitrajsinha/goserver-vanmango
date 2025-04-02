@@ -68,7 +68,7 @@ func init() {
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 
-	var err error
+	// var err error
 
 	// panic recovery
 	defer func() {
@@ -87,13 +87,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// close db connection
-	defer func() {
-		log.Println("hereee")
-		err = driver.CloseDB()
-		if err != nil {
-			panic(err)
-		}
-	}()
+	// defer func() {
+	// 	log.Println("hereee")
+	// 	err = driver.CloseDB()
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
