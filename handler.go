@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/goserver-vanmango/driver"
@@ -44,6 +43,15 @@ func init() {
 	var sqlSchemaFile string = "store/schema.sql"
 
 	var err error
+
+	// close db connection
+	defer func() {
+		err = driver.CloseDB()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	// initialize database connection
 	var message string
 	err = driver.InitDB()
@@ -80,7 +88,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	// Load env file data to sys env (development)
 	_ = godotenv.Load()
-	time.Sleep(5 * time.Second)
 
 	if dbClient == nil {
 		log.Println("Error connecting db")
