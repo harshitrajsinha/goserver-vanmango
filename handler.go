@@ -34,7 +34,7 @@ func loadDataToDatabase(dbClient *sql.DB, filename string) error {
 func Handler(w http.ResponseWriter, r *http.Request) {
 
 	var err error
-	var sqlSchemaFile string = "/store/schema.sql"
+	var sqlSchemaFile string = "store/schema.sql"
 	var dbClient *sql.DB
 
 	// panic recovery
