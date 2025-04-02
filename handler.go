@@ -10,7 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/goserver-vanmango/driver"
-	"github.com/harshitrajsinha/goserver-vanmango/routes/v1"
+	"github.com/harshitrajsinha/goserver-vanmango/middleware"
+	"github.com/harshitrajsinha/goserver-vanmango/routes"
+	apiV1 "github.com/harshitrajsinha/goserver-vanmango/routes/v1"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 	"github.com/harshitrajsinha/goserver-vanmango/store"
 	"github.com/joho/godotenv"
@@ -89,12 +91,39 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	// Initialize engine constructors
 	engineStore := store.NewEngineStore(dbClient)
 	engineService := service.NewEngineService(engineStore)
-	_ = routes.NewEngineHandler(engineService)
+	engineHandler := apiV1.NewEngineHandler(engineService)
 
 	// Initialize van constructors
 	vanStore := store.NewVanStore(dbClient)
 	vanService := service.NewVanService(vanStore)
-	_ = routes.NewVanHandler(vanService)
+	vanHandler := apiV1.NewVanHandler(vanService)
+
+	// -------------------- Public routes
+
+	// Routes for Engine
+	router.HandleFunc("/api/v1/engine/{id}", engineHandler.GetEngineByID).Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/engines", engineHandler.GetAllEngine).Methods(http.MethodGet)
+	// Routes for Van
+	router.HandleFunc("/api/v1/van/{id}", vanHandler.GetVanByID).Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/vans", vanHandler.GetAllVan).Methods(http.MethodGet)
+
+	// -------------------- Protected routes
+
+	router.HandleFunc("/api/v1/login", routes.LoginHandler).Methods(http.MethodPost)
+	protectedRouter := router.PathPrefix("/").Subrouter()
+	protectedRouter.Use(middleware.AuthMiddleware)
+
+	// Routes for Engine
+	protectedRouter.HandleFunc("/api/v1/engine", engineHandler.CreateEngine).Methods(http.MethodPost)
+	protectedRouter.HandleFunc("/api/v1/engine/{id}", engineHandler.UpdateEngine).Methods(http.MethodPut)
+	protectedRouter.HandleFunc("/api/v1/engine/{id}", engineHandler.UpdateEnginePartial).Methods(http.MethodPatch)
+	protectedRouter.HandleFunc("/api/v1/engine/{id}", engineHandler.DeleteEngine).Methods(http.MethodDelete)
+
+	// Routes for Van
+	protectedRouter.HandleFunc("/api/v1/van", vanHandler.CreateVan).Methods(http.MethodPost)
+	protectedRouter.HandleFunc("/api/v1/van/{id}", vanHandler.UpdateVan).Methods(http.MethodPut)
+	protectedRouter.HandleFunc("/api/v1/van/{id}", vanHandler.UpdateVanPartial).Methods(http.MethodPatch)
+	protectedRouter.HandleFunc("/api/v1/van/{id}", vanHandler.DeleteVan).Methods(http.MethodDelete)
 
 	port := os.Getenv("PORT")
 	if port == "" {
