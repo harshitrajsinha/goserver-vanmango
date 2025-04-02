@@ -12,5 +12,9 @@
       "dest": "handler.go"
     }
   ],
-  "includeFiles": ["store/schema.sql"]
+  "functions": {
+    "handler.go": {
+      "includeFiles": "store/schema.sql"
+    }
+  }
 }
