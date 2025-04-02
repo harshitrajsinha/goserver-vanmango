@@ -34,12 +34,6 @@ func loadDataToDatabase(dbClient *sql.DB, filename string) error {
 	return nil
 }
 
-func handleHomeRoute(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "Server is functioning"})
-}
-
 func Handler(w http.ResponseWriter, r *http.Request) {
 
 	var err error
@@ -86,7 +80,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		log.Println("SQL file executed successfully!")
 	}
 	router := mux.NewRouter()
-	router.HandleFunc("/", handleHomeRoute).Methods("GET")
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "Server is functioning"})
+	}).Methods("GET")
 
 	// Initialize engine constructors
 	engineStore := store.NewEngineStore(dbClient)
