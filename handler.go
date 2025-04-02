@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/goserver-vanmango/driver"
+	"github.com/harshitrajsinha/goserver-vanmango/routes/v1"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 	"github.com/harshitrajsinha/goserver-vanmango/store"
 	"github.com/joho/godotenv"
@@ -87,13 +88,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	// Initialize engine constructors
 	engineStore := store.NewEngineStore(dbClient)
-	_ = service.NewEngineService(engineStore)
-	// _ = apiV1.NewEngineHandler(engineService)
+	engineService := service.NewEngineService(engineStore)
+	_ = routes.NewEngineHandler(engineService)
 
 	// Initialize van constructors
 	vanStore := store.NewVanStore(dbClient)
-	_ = service.NewVanService(vanStore)
-	// _ = apiV1.NewVanHandler(vanService)
+	vanService := service.NewVanService(vanStore)
+	_ = routes.NewVanHandler(vanService)
 
 	port := os.Getenv("PORT")
 	if port == "" {

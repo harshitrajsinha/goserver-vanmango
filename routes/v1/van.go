@@ -1,4 +1,4 @@
-package handler
+package routes
 
 import (
 	"encoding/json"
@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-	"github.com/harshitrajsinha/goserver-vanmango/handler"
 	"github.com/harshitrajsinha/goserver-vanmango/models"
+	"github.com/harshitrajsinha/goserver-vanmango/routes"
 	"github.com/harshitrajsinha/goserver-vanmango/service"
 )
 
@@ -49,7 +49,7 @@ func (v *VanHandler) GetVanByID(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Invalid engine ID"})
 		log.Println("Invalid Van ID")
 		return
 	}
@@ -59,7 +59,7 @@ func (v *VanHandler) GetVanByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -68,7 +68,7 @@ func (v *VanHandler) GetVanByID(w http.ResponseWriter, r *http.Request) {
 	respData = append(respData, resp) // enclose data in an array
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(handler.Response{Code: http.StatusOK, Data: respData})
+	json.NewEncoder(w).Encode(routes.Response{Code: http.StatusOK, Data: respData})
 	log.Println("Van data populated successfully based on ID")
 }
 
@@ -90,14 +90,14 @@ func (v *VanHandler) GetAllVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
 	// Send response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(handler.Response{Code: http.StatusOK, Data: resp})
+	json.NewEncoder(w).Encode(routes.Response{Code: http.StatusOK, Data: resp})
 	log.Println("All van data populated successfully")
 }
 
@@ -119,7 +119,7 @@ func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 	defer r.Body.Close()
@@ -129,17 +129,17 @@ func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
 		log.Println(err)
 		return
 	}
 
 	// Verify request field
-	doesKeyExists := handler.VerifyVanRequestBody(body, 1)
+	doesKeyExists := routes.VerifyVanRequestBody(body, 1)
 	if !doesKeyExists {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
 		log.Println("Missing required fields")
 		return
 	}
@@ -148,7 +148,7 @@ func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	if err := models.ValidateVanReq(vanReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: err.Error()})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: err.Error()})
 		log.Println(err)
 		return
 	}
@@ -158,7 +158,7 @@ func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -166,12 +166,12 @@ func (v *VanHandler) CreateVan(w http.ResponseWriter, r *http.Request) {
 	if createdVan > 0 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusCreated, Message: "van data inserted into DB successfully!"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusCreated, Message: "van data inserted into DB successfully!"})
 		log.Println("van data inserted into DB successfully!")
 	} else {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No rows inserted - Possibly data already exists"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "No rows inserted - Possibly data already exists"})
 		log.Println("No rows inserted - Possibly data already exists")
 	}
 }
@@ -198,7 +198,7 @@ func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
 		log.Println("Invalid van ID")
 		return
 	}
@@ -209,7 +209,7 @@ func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -218,17 +218,17 @@ func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
 		log.Println(err)
 		return
 	}
 
 	// Verify request field
-	doesKeyExists := handler.VerifyVanRequestBody(body, 1)
+	doesKeyExists := routes.VerifyVanRequestBody(body, 1)
 	if !doesKeyExists {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
 		log.Println("Missing required fields")
 		return
 	}
@@ -237,7 +237,7 @@ func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	if err := models.ValidateVanReq(vanReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: err.Error()})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: err.Error()})
 		log.Println(err)
 		return
 	}
@@ -247,7 +247,7 @@ func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -259,7 +259,7 @@ func (v *VanHandler) UpdateVan(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already exists"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already exists"})
 		log.Println("value of updatedVan is ", updatedVan)
 		return
 	}
@@ -287,7 +287,7 @@ func (v *VanHandler) UpdateVanPartial(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
 		log.Println("Invalid van ID")
 		return
 	}
@@ -298,7 +298,7 @@ func (v *VanHandler) UpdateVanPartial(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -307,17 +307,17 @@ func (v *VanHandler) UpdateVanPartial(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Value type is incorrect"})
 		log.Println(err)
 		return
 	}
 
 	// Verify request field
-	doesKeyExists := handler.VerifyVanRequestBody(body, 0)
+	doesKeyExists := routes.VerifyVanRequestBody(body, 0)
 	if !doesKeyExists {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Missing required fields"})
 		log.Println("Missing required fields")
 		return
 	}
@@ -326,7 +326,7 @@ func (v *VanHandler) UpdateVanPartial(w http.ResponseWriter, r *http.Request) {
 	if err := models.ValidateVanPatchReq(body); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: err.Error()})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: err.Error()})
 		log.Println(err)
 		return
 	}
@@ -336,7 +336,7 @@ func (v *VanHandler) UpdateVanPartial(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while reading data"})
 		panic(err)
 	}
 
@@ -348,7 +348,7 @@ func (v *VanHandler) UpdateVanPartial(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already exists"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already exists"})
 		log.Println("value of updatedVan is ", updatedVan)
 		return
 	}
@@ -376,7 +376,7 @@ func (v *VanHandler) DeleteVan(w http.ResponseWriter, r *http.Request) {
 	if result.Version() != 4 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "Invalid van ID"})
 		log.Println("Invalid van ID")
 		return
 	}
@@ -386,7 +386,7 @@ func (v *VanHandler) DeleteVan(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusInternalServerError, Message: "Error occured while deleting data"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusInternalServerError, Message: "Error occured while deleting data"})
 		panic(err)
 	}
 
@@ -399,7 +399,7 @@ func (v *VanHandler) DeleteVan(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(handler.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already deleted"})
+		json.NewEncoder(w).Encode(routes.Response{Code: http.StatusBadRequest, Message: "No data present for provided Van ID or data already deleted"})
 		log.Println("value of deletedVan is ", deletedVan)
 		return
 	}
