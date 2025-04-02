@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -9,7 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/harshitrajsinha/goserver-vanmango/driver"
-	"github.com/harshitrajsinha/goserver-vanmango/test"
+	apiV1 "github.com/harshitrajsinha/goserver-vanmango/handler/v1"
+	"github.com/harshitrajsinha/goserver-vanmango/service"
+	"github.com/harshitrajsinha/goserver-vanmango/store"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -29,6 +32,12 @@ func loadDataToDatabase(dbClient *sql.DB, filename string) error {
 		return err
 	}
 	return nil
+}
+
+func handleHomeRoute(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": "Server is functioning"})
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +86,17 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		log.Println("SQL file executed successfully!")
 	}
 	router := mux.NewRouter()
-	router.HandleFunc("/", test.HandleHomeRoute).Methods("GET")
+	router.HandleFunc("/", handleHomeRoute).Methods("GET")
+
+	// Initialize engine constructors
+	engineStore := store.NewEngineStore(dbClient)
+	engineService := service.NewEngineService(engineStore)
+	_ = apiV1.NewEngineHandler(engineService)
+
+	// Initialize van constructors
+	vanStore := store.NewVanStore(dbClient)
+	vanService := service.NewVanService(vanStore)
+	_ = apiV1.NewVanHandler(vanService)
 
 	port := os.Getenv("PORT")
 	if port == "" {
