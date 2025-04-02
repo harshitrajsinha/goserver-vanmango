@@ -88,6 +88,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	// close db connection
 	defer func() {
+		log.Println("hereee")
 		err = driver.CloseDB()
 		if err != nil {
 			panic(err)
